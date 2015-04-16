@@ -1,17 +1,38 @@
+/* Forward declarations */
+struct lval;
+struct lenv;
+typedef struct lval lval;
+typedef struct lenv lenv;
+
+/* Function pointer type */
+typedef lval*(*lbuiltin)(lenv*, lval*);
+
+/* Create Enumeration of possible lval Types */
+enum { LVAL_NUM, LVAL_ERR, LVAL_SYM, LVAL_FUN, 
+       LVAL_SEXPR, LVAL_QEXPR };
+
 /*Declare New lval Struct */
-typedef struct lval {
+struct lval {
   int type;
   long num;
   /* Error and Symbol types have some string data */
   char* err;
   char* sym;
+
+  /* ??? */
+  lbuiltin fun;
+
   /* Count and Pointer to a list of "lval*" */
   int count;
   struct lval** cell;
-} lval;
+};
 
-/* Create Enumeration of possible lval Types */
-enum { LVAL_NUM, LVAL_ERR, LVAL_SYM, LVAL_SEXPR, LVAL_QEXPR };
+/* Variable environment struct */
+struct lenv {
+    int count;
+    char** syms;
+    lval** vals;
+};
 
 /* Create Enumeration of Possible Error Types */
 enum { LERR_DIV_ZERO, LERR_BAD_OP, LERR_BAD_NUM };
@@ -19,20 +40,52 @@ enum { LERR_DIV_ZERO, LERR_BAD_OP, LERR_BAD_NUM };
 /* Function declarations */
 lval* eval(mpc_ast_t*);
 lval* eval_op(lval*, char*, lval*);
-lval* lval_eval_sexpr(lval*);
-lval* lval_eval(lval* v);
+lval* lval_eval_sexpr(lenv*, lval*);
+lval* lval_eval(lenv*, lval*);
+
 lval* lval_pop(lval*, int);
 lval* lval_take(lval*, int);
-lval* builtin_op(lval*, char*);
+lval* lval_join(lval*, lval*);
+
+lval* builtin(lenv*, lval*, char*);
+lval* builtin_op(lenv*, lval*, char*);
+lval* builtin_head(lenv*, lval*);
+lval* builtin_tail(lenv*, lval*);
+lval* builtin_list(lenv*, lval*);
+lval* builtin_eval(lenv*, lval*);
+lval* builtin_join(lenv*, lval*);
+
+/* Math-specific builtins */
+lval* builtin_add(lenv* e, lval* a);
+lval* builtin_sub(lenv* e, lval* a);
+lval* builtin_mul(lenv* e, lval* a);
+lval* builtin_div(lenv* e, lval* a);
+
+
 lval* lval_num(long);
-lval* lval_err(char*);
+lval* lval_err(char* fmt, ...);
 lval* lval_sym(char*);
 lval* lval_qexpr(void);
 lval* lval_read_num(mpc_ast_t*);
 lval* lval_read(mpc_ast_t*);
 lval* lval_add(lval*, lval*);
+lval* lval_copy(lval* v);
 void lval_expr_print(lval*, char, char);
 void lval_print(lval*);
 void lval_del(lval*);
 void lval_print(lval*);
 void lval_println(lval*);
+
+/* Variable Environment functions */
+lenv* lenv_new(void);
+void lenv_del(lenv* e);
+lval* lenv_get(lenv* e, lval* k);
+void lenv_put(lenv* e, lval* k, lval* v); 
+
+void lenv_add_builtin(lenv* e, char* name, lbuiltin func);
+void lenv_add_builtins(lenv* e);
+
+lval* builtin_def(lenv* e, lval* a);
+
+
+char* ltype_name(int);
