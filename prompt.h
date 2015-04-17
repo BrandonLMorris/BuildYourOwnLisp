@@ -8,8 +8,8 @@ typedef struct lenv lenv;
 typedef lval*(*lbuiltin)(lenv*, lval*);
 
 /* Create Enumeration of possible lval Types */
-enum { LVAL_NUM, LVAL_ERR, LVAL_SYM, LVAL_FUN, 
-       LVAL_SEXPR, LVAL_QEXPR };
+enum { LVAL_NUM, LVAL_ERR, LVAL_SYM, LVAL_STR, 
+       LVAL_FUN, LVAL_SEXPR, LVAL_QEXPR };
 
 /*Declare New lval Struct */
 struct lval {
@@ -19,6 +19,7 @@ struct lval {
   long num;
   char* err;
   char* sym;
+  char* str;
 
   //lbuiltin fun;
 
@@ -72,6 +73,7 @@ lval* builtin_div(lenv* e, lval* a);
 lval* lval_num(long);
 lval* lval_err(char* fmt, ...);
 lval* lval_sym(char*);
+lval* lval_sexpr(void);
 lval* lval_qexpr(void);
 lval* lval_read_num(mpc_ast_t*);
 lval* lval_read(mpc_ast_t*);
@@ -119,3 +121,21 @@ lval* builtin_eq(lenv*, lval*);
 lval* builtin_eq(lenv*, lval*);
 lval* builtin_ne(lenv*, lval*);
 lval* builtin_if(lenv*, lval*);
+
+
+lval* lval_str(char* s);
+void lval_print_str(lval*);
+lval* lval_read_str(mpc_ast_t* t);
+
+mpc_parser_t* Number;
+mpc_parser_t* Symbol;
+mpc_parser_t* String;
+mpc_parser_t* Comment;
+mpc_parser_t* Sexpr;
+mpc_parser_t* Qexpr;
+mpc_parser_t* Expr; 
+mpc_parser_t* Lispy;
+
+lval* builtin_load(lenv*, lval*);
+lval* builtin_print(lenv*, lval*);
+lval* builtin_err(lenv*, lval*);
