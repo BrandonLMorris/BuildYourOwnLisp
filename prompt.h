@@ -14,21 +14,28 @@ enum { LVAL_NUM, LVAL_ERR, LVAL_SYM, LVAL_FUN,
 /*Declare New lval Struct */
 struct lval {
   int type;
+
+  /* Basic */
   long num;
-  /* Error and Symbol types have some string data */
   char* err;
   char* sym;
 
-  /* ??? */
-  lbuiltin fun;
+  //lbuiltin fun;
 
-  /* Count and Pointer to a list of "lval*" */
+  /* Function */
+  lbuiltin builtin;
+  lenv* env;
+  lval* formals;
+  lval* body;
+
+  /* Expression */
   int count;
   struct lval** cell;
 };
 
 /* Variable environment struct */
 struct lenv {
+    lenv* par;
     int count;
     char** syms;
     lval** vals;
@@ -86,6 +93,29 @@ void lenv_add_builtin(lenv* e, char* name, lbuiltin func);
 void lenv_add_builtins(lenv* e);
 
 lval* builtin_def(lenv* e, lval* a);
+lval* builtin_put(lenv*, lval*, char*);
+lval* builtin_var(lenv*, lval*, char*);
 
 
 char* ltype_name(int);
+
+lval* lval_lambda(lval* formals, lval* body);
+lval* builtin_lambda(lenv* e, lval* a);
+
+lenv* lenv_copy(lenv* e);
+void lenv_def(lenv* e, lval* k, lval* v);
+
+lval* lval_call(lenv* e, lval* f, lval* a);
+
+
+lval* builtin_gt(lenv*, lval*);
+lval* builtin_lt(lenv*, lval*);
+lval* builtin_ge(lenv*, lval*);
+lval* builtin_le(lenv*, lval*);
+lval* builtin_ord(lenv*, lval*, char*);
+int lval_eq(lval*, lval*);
+lval* builtin_cmp(lenv*, lval*, char*);
+lval* builtin_eq(lenv*, lval*);
+lval* builtin_eq(lenv*, lval*);
+lval* builtin_ne(lenv*, lval*);
+lval* builtin_if(lenv*, lval*);
